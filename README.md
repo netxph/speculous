@@ -100,4 +100,4 @@ Initializers and Destroyers
     }
 ```
 ## License
-Cards is released under the [MIT License](http://www.opensource.org/licenses/MIT).
+spec.ulous is released under the [MIT License](http://www.opensource.org/licenses/MIT).
