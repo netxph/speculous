@@ -3,27 +3,150 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Xunit;
+using FluentAssertions;
+using Moq;
 
 namespace Speculous.Tests
 {
     public class TestCaseTests
     {
 
-        public class FuncDefineGetMethod : TestCase<string>
+        public class OverrideParent : TestCase<string>
         {
-
             protected override void Initialize()
             {
-                Define("Message", () => "Hello world!!!");
+                Define("Dependent", () =>
+                {
+                    var dependent = new Mock<IDependentObject>();
+                    dependent
+                    .Setup(d => d.GetBaseMessage())
+                    .Returns("Hello there");
+
+                    return dependent.Object;
+                });
             }
 
             protected override Func<string> Given()
             {
-                var message = Get<string>("Message");
+                return null;
+            }
 
-                return () => message;
+            public class WhenImplemented : TestCase<string>
+            {
+                protected override void Initialize()
+                {
+                    InheritStore();
+
+                    Define("Dependent", () =>
+                    {
+                        var dependent = new Mock<IDependentObject>();
+                        dependent
+                        .Setup(d => d.GetBaseMessage())
+                        .Returns("Hi there");
+
+                        return dependent.Object;
+                    });
+                }
+
+                protected override Func<string> Given()
+                {
+                    var dependent = Get<IDependentObject>("Dependent");
+
+                    var sample = new SampleObject();
+                    sample.Dependent = dependent;
+
+                    return () => sample.GetMessage("test");
+                }
+
+                [Fact]
+                public void ShouldNotBeNull()
+                {
+                    It.Should().NotBeNull();
+                }
+
+                [Fact]
+                public void ShouldHaveMessageOverriden()
+                {
+                    It.Should().Be("Hi there, test");
+                }
+
+            }
+
+        }
+
+
+        public class InheritParent : TestCase<string>
+        {
+            protected override void Initialize()
+            {
+                Define("Dependent", () =>
+                {
+                    var dependent = new Mock<IDependentObject>();
+                    dependent
+                    .Setup(d => d.GetBaseMessage())
+                    .Returns("Hello there");
+
+                    return dependent.Object;
+                });
+            }
+
+            protected override Func<string> Given()
+            {
+                return null;
+            }
+
+            public class WhenImplemented : TestCase<string>
+            {
+                protected override Func<string> Given()
+                {
+                    var dependent = Get<IDependentObject>("Dependent");
+
+                    var sample = new SampleObject();
+                    sample.Dependent = dependent;
+
+                    return () => sample.GetMessage("test");
+                }
+
+                [Fact]
+                public void ShouldNotBeNull()
+                {
+                    It.Should().NotBeNull();
+                }
+
+                [Fact]
+                public void ShouldHaveMessageOverriden()
+                {
+                    It.Should().Be("Hello there, test");
+                }
+            }
+
+        }
+
+
+        public class TestBagProperty : TestCase<string>
+        {
+            protected override void Initialize()
+            {
+                Define("Dependent", () =>
+                {
+                    var dependent = new Mock<IDependentObject>();
+                    dependent
+                    .Setup(d => d.GetBaseMessage())
+                    .Returns("Hello there");
+
+                    return dependent.Object;
+                });
+            }
+
+            protected override Func<string> Given()
+            {
+                var dependent = Get<IDependentObject>("Dependent");
+
+                var sample = new SampleObject();
+                sample.Dependent = dependent;
+
+                return () => sample.GetMessage("test");
             }
 
             [Fact]
@@ -33,89 +156,89 @@ namespace Speculous.Tests
             }
 
             [Fact]
-            public void ShouldNotBeEmpty()
+            public void ShouldHaveMessageOverriden()
             {
-                It.Should().NotBeEmpty();
-            }
-
-            [Fact]
-            public void ShouldHaveMessage()
-            {
-                It.Should().Be("Hello world!!!");
-            }
-
-            public class GetParentTestBag : TestCase<string>
-            {
-
-                [Fact]
-                public void ShouldHaveMessage()
-                {
-                    It.Should().Be("Hello world!!!");
-                }    
-
-            }
-
-            public class GetParentTestBag_NotInherit : TestCase<string>
-            {
-                protected override void Initialize()
-                {
-                    
-                }
-
-                [Fact]
-                public void ShouldBeNull()
-                {
-                    It.Should().BeNull();
-                }
+                It.Should().Be("Hello there, test");
             }
 
         }
 
-        public class FuncGivenMethod : TestCase<string>
+
+        public class InitializeMethod : TestCase<string>
+        {
+            IDependentObject _dependent = null;
+
+            protected override void Initialize()
+            {
+                var dependent = new Mock<IDependentObject>();
+                dependent
+                    .Setup(d => d.GetBaseMessage())
+                    .Returns("Hello there");
+
+                _dependent = dependent.Object;
+            }
+
+            protected override Func<string> Given()
+            {
+                var sample = new SampleObject();
+                sample.Dependent = _dependent;
+
+                return () => sample.GetMessage("test");
+            }
+
+            [Fact]
+            public void ShouldNotBeNull()
+            {
+                It.Should().NotBeNull();
+            }
+
+            [Fact]
+            public void ShouldHaveMessageOverridden()
+            {
+                Subject().Should().Be("Hello there, test");
+            }
+        }
+
+
+        public class GivenMethod : TestCase<string>
         {
 
             protected override Func<string> Given()
             {
-                SampleObject.BaseMessage = "Hello there";
-
                 var sample = new SampleObject();
 
                 return () => sample.GetMessage("test");
             }
 
             [Fact]
-            public void ShouldExecuteSubject()
+            public void ShouldNotBeNull()
             {
-                Subject().Should().Be("Hello there, test");
+                Subject().Should().NotBeNull();
             }
 
             [Fact]
-            public void ShouldExecuteSubjectUsingIt()
+            public void ShouldNotBeEmpty()
             {
-                It.Should().Be("Hello there, test");
+                Subject().Should().NotBeEmpty();
             }
 
             [Fact]
-            public void ShouldExecuteSubjectUsingIts()
+            public void ShouldHaveValue()
             {
-                Its.Should().Be("Hello there, test");
+                Subject().Should().Be("Hello, test");
             }
 
-            protected override void Destroy()
+            [Fact]
+            public void ShouldRespondToIt()
             {
-                base.Destroy();
+                It.Should().Be("Hello, test");
             }
 
-            //change context
-            public class GetParentContext : TestCase<string>
+            [Fact]
+            public void ShouldRespondToIts()
             {
-                [Fact]
-                public void ShouldExecuteParentSubject()
-                {
-                    Subject().Should().Be("Hello there, test");
-                }
+                Its.Should().Be("Hello, test");
             }
-
         }
 
     }

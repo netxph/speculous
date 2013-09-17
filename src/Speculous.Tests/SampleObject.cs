@@ -9,11 +9,18 @@ namespace Speculous.Tests
     public class SampleObject
     {
 
-        public static string BaseMessage { get; set; }
+        public IDependentObject Dependent { get; set; }
 
         public string GetMessage(string message)
         {
-            return string.Format("{0}, {1}", BaseMessage, message);
+            var baseMessage = "Hello";
+
+            if (Dependent != null)
+            {
+                baseMessage = Dependent.GetBaseMessage();
+            }
+
+            return string.Format("{0}, {1}", baseMessage, message);
         }
 
     }
