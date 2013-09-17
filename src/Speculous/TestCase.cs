@@ -41,6 +41,7 @@ namespace Speculous
         {
             get
             {
+                Initialize();
                 return Given();
             }
         }
@@ -83,7 +84,6 @@ namespace Speculous
         public TestCase()
         {
             TestBag = new Dictionary<string, Func<object>>();
-            Initialize();
         }
 
         #endregion
@@ -108,7 +108,12 @@ namespace Speculous
         /// <returns></returns>
         protected TObject Get<TObject>(string key)
         {
-            return (TObject)TestBag[key]();
+            if (TestBag.ContainsKey(key))
+            {
+                return (TObject)TestBag[key]();
+            }
+
+            return default(TObject);
         }
 
         #endregion

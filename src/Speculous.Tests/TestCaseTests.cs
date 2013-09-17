@@ -11,8 +11,69 @@ namespace Speculous.Tests
     public class TestCaseTests
     {
 
+        public class FuncDefineGetMethod : TestCase<string>
+        {
+
+            protected override void Initialize()
+            {
+                Define("Message", () => "Hello world!!!");
+            }
+
+            protected override Func<string> Given()
+            {
+                var message = Get<string>("Message");
+
+                return () => message;
+            }
+
+            [Fact]
+            public void ShouldNotBeNull()
+            {
+                It.Should().NotBeNull();
+            }
+
+            [Fact]
+            public void ShouldNotBeEmpty()
+            {
+                It.Should().NotBeEmpty();
+            }
+
+            [Fact]
+            public void ShouldHaveMessage()
+            {
+                It.Should().Be("Hello world!!!");
+            }
+
+            public class GetParentTestBag : TestCase<string>
+            {
+
+                [Fact]
+                public void ShouldHaveMessage()
+                {
+                    It.Should().Be("Hello world!!!");
+                }    
+
+            }
+
+            public class GetParentTestBag_NotInherit : TestCase<string>
+            {
+                protected override void Initialize()
+                {
+                    
+                }
+
+                [Fact]
+                public void ShouldBeNull()
+                {
+                    It.Should().BeNull();
+                }
+            }
+
+        }
+
         public class FuncGivenMethod : TestCase<string>
         {
+
             protected override Func<string> Given()
             {
                 SampleObject.BaseMessage = "Hello there";
@@ -40,19 +101,18 @@ namespace Speculous.Tests
                 Its.Should().Be("Hello there, test");
             }
 
-            //change context
-            public class ChangeContext : TestCase<string>
+            protected override void Destroy()
             {
-                protected override Func<string> Given()
-                {
-                    var sample = new SampleObject();
-                    return () => sample.GetMessage("mike");
-                }
+                base.Destroy();
+            }
 
+            //change context
+            public class GetParentContext : TestCase<string>
+            {
                 [Fact]
-                public void ShouldChangeContext()
+                public void ShouldExecuteParentSubject()
                 {
-                    Subject().Should().Be("Hello there, mike");
+                    Subject().Should().Be("Hello there, test");
                 }
             }
 
