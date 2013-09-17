@@ -23,13 +23,19 @@ namespace Speculous.Tests
             }
 
             [Fact]
-            public void ShouldPerformGiven()
+            public void ShouldExecuteSubject()
             {
                 Subject().Should().Be("Hello there, test");
             }
 
             [Fact]
-            public void ShouldPerformGivenExecuted()
+            public void ShouldExecuteSubjectUsingIt()
+            {
+                It.Should().Be("Hello there, test");
+            }
+
+            [Fact]
+            public void ShouldExecuteSubjectUsingIts()
             {
                 Its.Should().Be("Hello there, test");
             }
@@ -51,71 +57,6 @@ namespace Speculous.Tests
             }
 
         }
-
-        public class ActionGivenMethod : TestCase
-        {
-            protected override Action Given()
-            {
-                SampleObject.BaseMessage = "Hello World!!!";
-                var sample = new SampleObject();
-
-                return () => sample.GetMessage("test");
-            }
-
-            [Fact]
-            public void ShouldPerformGiven()
-            {
-                Subject();
-            }
-
-            public class ChangeContext : TestCase
-            {
-                protected override Action Given()
-                {
-                    var sample = new SampleObject();
-
-                    return () => sample.GetMessage("mike");
-                }
-
-                [Fact]
-                public void ShouldPerformGivenContext()
-                {
-                    Subject();
-                    SampleObject.BaseMessage.Should().Be("Hello World!!!");
-                }
-            }
-
-        }
-
-        public class WithMethod : TestCase
-        {
-            protected override Action Given()
-            {
-                With(() => SampleObject.BaseMessage = "Hello",
-                     () => SampleObject.BaseMessage = "Goodbye");
-
-                var sample = new SampleObject();
-
-                return () => sample.GetMessage("test");
-            }
-
-            [Fact]
-            public void ShouldBaseMessageIsHello()
-            {
-                Subject();
-                SampleObject.BaseMessage.Should().Be("Hello");
-            }
-
-            [Fact]
-            public void ShouldBaseMessageIsGoodbye()
-            {
-                Subject();
-                Dispose();
-                SampleObject.BaseMessage.Should().Be("Goodbye");
-            }
-        }
-
-
 
     }
 }

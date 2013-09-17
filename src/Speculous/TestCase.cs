@@ -6,101 +6,225 @@ using System.Threading.Tasks;
 
 namespace Speculous
 {
-    public abstract class TestCase<T> : Base
+
+    /// <summary>
+    /// Base class for tests, follows RSpec style
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class TestCase<T> : IDisposable, ITestExtend
     {
 
-        protected virtual void PerformContext()
-        {
-            var parent = GetParent() as TestCase<T>;
+        #region Declarations
 
-            if (parent != null)
-            {
-                parent.Given();
-            }
-        }
+        ITestExtend _parent = null;
 
-        protected T Its
-        {
-            get { return Subject(); }
-        }
+        #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Object storage, used for storing supporting classes and mocks for the subject
+        /// </summary>
+        protected Dictionary<string, Func<object>> TestBag { get; set; }
+
+        #endregion
+
+        #region Subject Properties
+
+        /// <summary>
+        /// Gets the Subject context
+        /// </summary>
+        /// <value>
+        /// The subject context.
+        /// </value>
         protected Func<T> Subject
         {
-            get 
+            get
             {
-                PerformContext();
-                return Given(); 
+                return Given();
             }
         }
 
-        protected abstract Func<T> Given();
-
-    }
-
-    public abstract class TestCase : Base
-    {
-        protected virtual void PerformContext()
+        /// <summary>
+        /// Gets the subject, aliased as "It" for english readability. Use for writing tests related to itself.
+        /// </summary>
+        /// <value>
+        /// The subject context.
+        /// </value>
+        protected T It
         {
-            var parent = GetParent() as TestCase;
-
-            if (parent != null)
+            get
             {
-                parent.Given();
+                return Subject();
             }
         }
 
-        protected Action Subject
+        /// <summary>
+        /// Gets the subject, aliased as "Its" for english readability. Use for writing tests related to its properties
+        /// </summary>
+        /// <value>
+        /// The subject context.
+        /// </value>
+        protected T Its
         {
-            get 
+            get
             {
-                PerformContext();
-                return Given(); 
+                return Subject();
             }
         }
 
-        protected abstract Action Given();
+        #endregion
 
-    }
+        #region Constructors
 
-    public abstract class Base : IDisposable
-    {
-
-        public Base()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestCase{T}"/> class.
+        /// </summary>
+        public TestCase()
         {
+            TestBag = new Dictionary<string, Func<object>>();
             Initialize();
         }
 
+        #endregion
+
+        #region Storage Methods
+
+        /// <summary>
+        /// Defines a test object.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="initObject">The test object.</param>
+        protected void Define(string key, Func<object> initObject)
+        {
+            TestBag[key] = initObject;
+        }
+
+        /// <summary>
+        /// Gets the test object
+        /// </summary>
+        /// <typeparam name="TObject">The type of the test object.</typeparam>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        protected TObject Get<TObject>(string key)
+        {
+            return (TObject)TestBag[key]();
+        }
+
+        #endregion
+
+        #region Test Methods
+
+        /// <summary>
+        /// Initializes objects for test. Place here non-operational components such as mocks and stubs.
+        /// </summary>
         protected virtual void Initialize()
-        { 
+        {
+            IncludeParent();
         }
 
+        /// <summary>
+        /// Defines how you are going to use the Subject. Place here operational components on how to use your subject.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual Func<T> Given()
+        {
+            return IncludeSubject();
+        }
+
+        /// <summary>
+        /// Disposes objects used in test.
+        /// </summary>
         protected virtual void Destroy()
-        { 
+        {
+
         }
 
-        protected object GetParent()
-        {
-            var parentType = this.GetType().DeclaringType;
+        #endregion
 
-            return Activator.CreateInstance(parentType);
+        #region Test Inherit Methods
+
+        /// <summary>
+        /// Returns the current test store object.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, Func<object>> InheritStore()
+        {
+            Initialize();
+            return TestBag;
         }
 
-        Action _destroyer = null;
+        
 
-        protected void With(Action initializer, Action destroyer)
+        /// <summary>
+        /// Gets the declaring parent class.
+        /// </summary>
+        /// <value>
+        /// The declaring parent class.
+        /// </value>
+        protected ITestExtend Parent
         {
-            initializer();
-            _destroyer = destroyer;
-        }
-
-        public void Dispose()
-        {
-            if (_destroyer != null)
+            get
             {
-                _destroyer();
-                Destroy();
+                if (_parent == null)
+                {
+                    var parentType = this.GetType().DeclaringType;
+                    _parent = Activator.CreateInstance(parentType) as ITestExtend;
+                }
+
+                return _parent;
             }
         }
-    }
 
+        /// <summary>
+        /// Includes the declaring parent class' Test Store.
+        /// </summary>
+        protected void IncludeParent()
+        {
+            if (Parent != null)
+            {
+                TestBag = Parent.InheritStore();
+            }
+        }
+
+        /// <summary>
+        /// Includes the subject defined in declaring parent class.
+        /// </summary>
+        /// <returns></returns>
+        protected Func<T> IncludeSubject()
+        {
+            if (Parent != null)
+            {
+                return () => (T)Parent.InheritSubject();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the current subject context.
+        /// </summary>
+        /// <returns></returns>
+        public object InheritSubject()
+        {
+            //Executes the code in Given
+            return Given()();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Destroy();
+        }
+
+        #endregion
+
+    }
+    
 }
