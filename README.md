@@ -4,99 +4,102 @@ Lightweight, simple BDD style of testing in .NET. Sits on top of your favorite x
 
 This project is sort of "scratch your own itch". What I don't like about other framework is they try too hard to mimic RSpec behavior. This project aims to combine the simplicity of RSpec and C# idioms and practices.
 
-##How to use
+##Principle
 
+This project doesn't aim to have a cutting edge framework but rather helps you organize on how you do tests. My guiding principle is test should be.
+
+* Serves as documentation, there should be one place where I could see how to use the subject in test
+* DRY (Don't repeat yourself), one location to define the subject and items that supports it
+* Subject-centric, there should be one subject per class that should be tested, this it to avoid mixing non related test items
+* One assertion per test, assertion items are defined mostly in one line, in clear and easy to understand context.
+* Separation of Subject and Non-subject elements (i.e. mocks and stubs)
+
+##General Guidelines
+
+* Use Given to define your subject
+* Use Initialize to define non-subject elements
+* Use Destroy to clean up resources
+* Naming conventions (my preference)
+    * Class name are in Pascal casing using the format [Method Name]Method_[Context Variation]
+        * Example: GetPersonMethod, GetPersonMethod_WithName
+    * Assertions uses format Should[Field]Is(Not)[State]
+        * Example: ShouldNameIsEmpty, ShouldNotBeNull, ShouldIDIsZero
+
+##How to use
 
 Simple (Note: this uses xUnit and FluentAssertions)
 ```c#
-    public class MyServiceTests
+    public class ConstructorMethod : TestCase<Person>
     {
-        public class GetPersonMethod : TestCase<Person>
-        {
-            public Func<Person> Given()
-            {
-                var service = new MyService();
-                return () => service.GetPerson(1);
-            }
-            
-            [Fact]
-            public void ShouldNotBeNull()
-            {
-                Subject().Should().NotBeNull();
-            }
-            
-            [Fact]
-            public void ShouldIDHasValue()
-            {
-                Its.ID.Should().Be(1);
-            }
-        }
-    }
-```
-Changing the Subject
-```c#
-    public class MyServiceTests
-    {
-        public class GetPersonMethod : TestCase<Person>
-        {
-            public Func<Person> Given()
-            {
-                DbFactory.Initialize();
-                Cache.Initialize();
-                
-                var service = new MyService();
-                return () => service.GetPerson(1);
-            }
-            
-            [Fact]
-            public void ShouldIDHasValue()
-            {
-                Its.ID.Should().Be(1);
-            }
-            
-            public class PersonNotFound : TestCase<Person>
-            {
-                public Func<Person> Given()
-                {
-                    //at this point DbFactory and Cache are already initialized
-                    
-                    var service = new MyService();
-                    return () => service.GetPerson(99);
-                }
-                
-                [Fact]
-                public void ShouldThrowPersonNotFound()
-                {
-                    Action act = Subject;
-                    act.ShouldThrow<Exception>()
-                        .WithMessage("Person not found.");
-                }
-            }
-        }
-    }
-```
-Initializers and Destroyers
-```c#
-    public class MyServiceTests
-    {
-        public class GetPersonMethod : TestCase<Person>
-        {
-            public Func<Person> Given()
-            {
-                With(() => Db.Initialize(),
-                     () => Db.Dispose());
-                     
-                var service = new MyService();
-                return () => service.GetPerson(1);
-            }
-            
-            [Fact]
-            public void ShouldNotBeNull()
-            {
-                Subject().Should().NotBeNull();
-            }
 
+        readonly DateTime TODAY = new DateTime(2013, 12, 1);
+
+        protected override void Initialize()
+        {
+            var dateProvider = new Mock<IDateProvider>();
+
+            Define("DateProvider", () =>
+            {
+                dateProvider
+                    .Setup(d => d.UtcNow())
+                    .Returns(TODAY);
+
+                return dateProvider.Object;
+            });
         }
+
+        protected override void Destroy()
+        {
+            Person.DateProvider = null;
+        }
+
+        protected override Func<Person> Given()
+        {
+            Person.DateProvider = New<IDateProvider>("DateProvider");
+            return () => new Person();
+        }
+
+        [Fact]
+        public void ShouldNotBeNull()
+        {
+            Subject().Should().NotBeNull();
+        }
+        
+        [Fact]
+        public void ShouldNameIsEmpty()
+        {
+            Its.Name.Should().BeEmpty();
+        }
+        
+        [Fact]
+        public void ShouldCreatedDateIsToday()
+        {
+            Its.CreatedDateUtc.Should().Be(TODAY);
+        }
+    }
+
+```
+Inheriting "Initialization" from other test case
+```c#
+    public class ConstructorMethod_WithName : TestCase<Person>
+    {
+        protected override void Initialize()
+        {
+            UseContext(new ConstructorMethod());
+        }
+
+        protected override Func<Person> Given()
+        {
+            Person.DateProvider = New<IDateProvider>("DateProvider");
+            return () => new Person("Marc");
+        }
+
+        [Fact]
+        public void ShouldNameHasValue()
+        {
+            Its.Name.Should().Be("Marc");
+        }
+
     }
 ```
 ## License
