@@ -6,11 +6,11 @@ This project is sort of "scratch your own itch". What I don't like about other f
 
 ##Principle
 
-This project doesn't aim to have a cutting edge framework but rather helps you organize on how you do tests. My guiding principle is test should be.
+This project doesn't aim to have a cutting edge framework but rather helps you organize on how you do tests. Below are my guiding principle:
 
 * Serves as documentation, there should be one place where I could see how to use the subject in test
 * DRY (Don't repeat yourself), one location to define the subject and items that supports it
-* Subject-centric, there should be one subject per class that should be tested, this it to avoid mixing non related test items
+* Subject-centric, there should be one subject per class that should be tested, this it to avoid mixing different test scenarios
 * One assertion per test, assertion items are defined mostly in one line, in clear and easy to understand context.
 * Separation of Subject and Non-subject elements (i.e. mocks and stubs)
 
