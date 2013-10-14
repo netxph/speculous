@@ -29,5 +29,10 @@ namespace Speculous.Examples
         public int Age { get; set; }
         public DateTime CreatedDateUtc { get; set; }
 
+
+        public static void Process()
+        {
+            
+        }
     }
 }

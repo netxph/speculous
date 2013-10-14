@@ -94,5 +94,20 @@ namespace Speculous.Examples
 
         }
 
+        public class ProcessMethod : TestCase
+        {
+            protected override Action Given()
+            {
+                return () => Person.Process();
+            }
+
+            [Fact]
+            public void ShouldNotThrowError()
+            {
+                Subject.ShouldNotThrow();
+            }
+        }
+
+
     }
 }

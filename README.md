@@ -102,5 +102,23 @@ Inheriting "Initialization" from other test case
 
     }
 ```
+For test context that returns void
+```c#
+    public class ProcessMethod : TestCase
+    {
+        protected override Action Given()
+        {
+            return () => Person.Process();
+        }
+
+        [Fact]
+        public void ShouldNotThrowError()
+        {
+            Subject.ShouldNotThrow();
+        }
+    }
+```
+
 ## License
 spec.ulous is released under the [MIT License](http://www.opensource.org/licenses/MIT).
+
