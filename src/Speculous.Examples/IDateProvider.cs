@@ -10,6 +10,6 @@ namespace Speculous.Examples
     {
 
         DateTime UtcNow();
-
+        void CleanUp();
     }
 }

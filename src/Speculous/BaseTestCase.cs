@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Speculous
 {
-    public abstract class TestBag : ITestExtension
+    public abstract class BaseTestCase : ITestExtension
     {
 
         /// <summary>
@@ -15,9 +15,9 @@ namespace Speculous
         protected Dictionary<string, Func<object>> Container { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestBag"/> class.
+        /// Initializes a new instance of the <see cref="BaseTestCase"/> class.
         /// </summary>
-        public TestBag()
+        public BaseTestCase()
         {
             Container = new Dictionary<string, Func<object>>();
         }
@@ -33,22 +33,45 @@ namespace Speculous
         }
 
         /// <summary>
+        /// Defines a specific object in testing, uses type as key.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="objectDef">The object definition.</param>
+        protected void Define<T>(Func<T> objectDef)
+        {
+            var key = typeof(T).Name;
+            Define(key, () => objectDef());
+        }
+
+        /// <summary>
         /// Creates object based on definition.
         /// </summary>
         /// <typeparam name="TObject">The type of the object.</typeparam>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected virtual TObject New<TObject>(string key)
+        protected virtual T New<T>(string key)
         {
             if (Container.ContainsKey(key))
             {
-                return (TObject)Container[key]();
+                return (T)Container[key]();
             }
             else
             {
                 throw new KeyNotFoundException(
                     string.Format("Object not found in test container. Define the object in Initialize method using:\r\n Define(\"{0}\", () => //the object definition)", key));
             }
+        }
+
+        /// <summary>
+        /// Creates object based on definition, uses type as key.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        protected T New<T>()
+        {
+            var key = typeof(T).Name;
+
+            return New<T>(key);
         }
 
         /// <summary>

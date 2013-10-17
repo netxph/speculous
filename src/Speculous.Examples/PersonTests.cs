@@ -20,7 +20,7 @@ namespace Speculous.Examples
             {
                 var dateProvider = new Mock<IDateProvider>();
 
-                Define("DateProvider", () =>
+                Define<IDateProvider>(() =>
                 {
                     dateProvider
                         .Setup(d => d.UtcNow())
@@ -32,13 +32,13 @@ namespace Speculous.Examples
 
             protected override void Destroy()
             {
-                Person.DateProvider = null;
+                var provider = New<IDateProvider>();
+                provider.CleanUp();
             }
 
             protected override Func<Person> Given()
             {
-                Person.DateProvider = New<IDateProvider>("DateProvider");
-                return () => new Person();
+                return () => new Person(New<IDateProvider>());
             }
 
             [Fact]
@@ -82,8 +82,7 @@ namespace Speculous.Examples
 
             protected override Func<Person> Given()
             {
-                Person.DateProvider = New<IDateProvider>("DateProvider");
-                return () => new Person("Marc");
+                return () => new Person("Marc", New<IDateProvider>());
             }
 
             [Fact]
@@ -98,7 +97,9 @@ namespace Speculous.Examples
         {
             protected override Action Given()
             {
-                return () => Person.Process();
+                var person = new Person();
+
+                return () => person.Process();
             }
 
             [Fact]

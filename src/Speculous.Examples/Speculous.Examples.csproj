@@ -53,6 +53,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultDateProvider.cs" />
     <Compile Include="IDateProvider.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="PersonTests.cs" />

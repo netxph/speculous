@@ -7,21 +7,30 @@ namespace Speculous.Examples
 {
     public class Person
     {
-        private string p;
 
-
-        public static IDateProvider DateProvider { get; set; }
+        protected IDateProvider DateProvider { get; private set; }
 
         public Person()
+            : this(string.Empty)
         {
-            Name = string.Empty;
-            CreatedDateUtc = DateProvider.UtcNow();
         }
 
         public Person(string name)
-            : this()
+            : this(name, new DefaultDateProvider())
         {
+        }
+
+        public Person(IDateProvider dateProvider)
+            : this(string.Empty, dateProvider)
+        {
+        }
+
+        public Person(string name, IDateProvider dateProvider)
+        {
+            DateProvider = dateProvider;
+
             Name = name;
+            CreatedDateUtc = DateProvider.UtcNow();
         }
 
         public int ID { get; set; }
@@ -30,9 +39,14 @@ namespace Speculous.Examples
         public DateTime CreatedDateUtc { get; set; }
 
 
-        public static void Process()
+        public void Process()
         {
             
+        }
+
+        public void Cleanup()
+        { 
+        
         }
     }
 }

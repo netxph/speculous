@@ -41,7 +41,7 @@
   <ItemGroup>
     <Compile Include="ITestExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestBag.cs" />
+    <Compile Include="BaseTestCase.cs" />
     <Compile Include="TestCase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

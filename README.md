@@ -29,34 +29,34 @@ This project doesn't aim to have a cutting edge framework but rather helps you o
 
 Simple (Note: this uses xUnit and FluentAssertions)
 ```c#
-    public class ConstructorMethod : TestCase<Person>
+public class ConstructorMethod : TestCase<Person>
+{
+
+    readonly DateTime TODAY = new DateTime(2013, 12, 1);
+
+    protected override void Initialize()
     {
+        var dateProvider = new Mock<IDateProvider>();
 
-        readonly DateTime TODAY = new DateTime(2013, 12, 1);
-
-        protected override void Initialize()
+        Define<IDateProvider>(() =>
         {
-            var dateProvider = new Mock<IDateProvider>();
+            dateProvider
+                .Setup(d => d.UtcNow())
+                .Returns(TODAY);
 
-            Define("DateProvider", () =>
-            {
-                dateProvider
-                    .Setup(d => d.UtcNow())
-                    .Returns(TODAY);
+            return dateProvider.Object;
+        });
+    }
 
-                return dateProvider.Object;
-            });
-        }
-
-        protected override void Destroy()
-        {
-            Person.DateProvider = null;
+    protected override void Destroy()
+    {
+        var provider = New<IDateProvider>();
+            provider.CleanUp();
         }
 
         protected override Func<Person> Given()
         {
-            Person.DateProvider = New<IDateProvider>("DateProvider");
-            return () => new Person();
+            return () => new Person(New<IDateProvider>());
         }
 
         [Fact]
@@ -64,19 +64,21 @@ Simple (Note: this uses xUnit and FluentAssertions)
         {
             Subject().Should().NotBeNull();
         }
-        
+
         [Fact]
-        public void ShouldNameIsEmpty()
+        public void ShouldIDIsZero()
         {
-            Its.Name.Should().BeEmpty();
+            Its.ID.Should().Be(0);
         }
-        
+
         [Fact]
         public void ShouldCreatedDateIsToday()
         {
             Its.CreatedDateUtc.Should().Be(TODAY);
         }
+
     }
+}
 
 ```
 Inheriting "Initialization" from other test case
@@ -121,4 +123,5 @@ For test context that returns void
 
 ## License
 spec.ulous is released under the [MIT License](http://www.opensource.org/licenses/MIT).
+
 
