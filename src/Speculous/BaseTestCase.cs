@@ -10,9 +10,20 @@ namespace Speculous
     {
 
         /// <summary>
-        /// Test container. Contains mocked objects and other non-subject items
+        /// Gets or sets the object definition container.
         /// </summary>
+        /// <value>
+        /// The container.
+        /// </value>
         protected Dictionary<string, Func<object>> Container { get; set; }
+
+        /// <summary>
+        /// Gets or sets the object container for tests.
+        /// </summary>
+        /// <value>
+        /// The object container.
+        /// </value>
+        protected Dictionary<string, object> ObjectContainer { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseTestCase"/> class.
@@ -20,6 +31,7 @@ namespace Speculous
         public BaseTestCase()
         {
             Container = new Dictionary<string, Func<object>>();
+            ObjectContainer = new Dictionary<string, object>();
         }
 
         /// <summary>
@@ -63,6 +75,31 @@ namespace Speculous
         }
 
         /// <summary>
+        /// Gets or creates the object.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Collections.Generic.KeyNotFoundException"></exception>
+        protected virtual T Get<T>(string key)
+        {
+            if (Container.ContainsKey(key))
+            {
+                if (!ObjectContainer.ContainsKey(key))
+                {
+                    ObjectContainer[key] = New<T>(key);
+                }
+
+                return (T)ObjectContainer[key];
+            }
+            else
+            {
+                throw new KeyNotFoundException(
+                    string.Format("Object not found in test container. Define the object in Initialize method using:\r\n Define(\"{0}\", () => //the object definition)", key));
+            }
+        }
+
+        /// <summary>
         /// Creates object based on definition, uses type as key.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -72,6 +109,13 @@ namespace Speculous
             var key = typeof(T).Name;
 
             return New<T>(key);
+        }
+
+        protected T Get<T>()
+        {
+            var key = typeof(T).Name;
+
+            return Get<T>(key);
         }
 
         /// <summary>
