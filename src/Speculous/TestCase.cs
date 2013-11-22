@@ -9,7 +9,7 @@ namespace Speculous
     /// Base class for test cases
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class TestCase<T> : BaseTestCase, IDisposable
+    public abstract class TestCase<T> : TestContainer, IDisposable
     {
         
         
@@ -67,7 +67,7 @@ namespace Speculous
     /// <summary>
     /// Base class for test cases that returns void
     /// </summary>
-    public abstract class TestCase : BaseTestCase, IDisposable
+    public abstract class TestCase : TestContainer, IDisposable
     {
 
         /// <summary>
