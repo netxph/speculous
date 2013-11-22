@@ -5,13 +5,37 @@ using System.Text;
 
 namespace Speculous
 {
+
     /// <summary>
     /// Base class for test cases
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class TestCase<T> : TestContainer, IDisposable
+    /// <typeparam name="T">Type of subject</typeparam>
+    /// <typeparam name="U">Type of context parameter</typeparam>
+    public abstract class TestCase<T, U> : TestBase
     {
-        
+
+        /// <summary>
+        /// The subject context
+        /// </summary>
+        protected Func<U, T> Subject
+        {
+            get {  return Given(); }
+        }
+
+        /// <summary>
+        /// Defines the subject and how it is executed
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Func<U, T> Given();
+
+    }
+
+    /// <summary>
+    /// Base class for test cases
+    /// </summary>
+    /// <typeparam name="T">Type of subject</typeparam>
+    public abstract class TestCase<T> : TestBase
+    {
         
         /// <summary>
         /// The subject context
@@ -30,62 +54,18 @@ namespace Speculous
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestCase{T}"/> class.
-        /// </summary>
-        public TestCase()
-            : base()
-        {
-            Initialize();
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Destroy();
-        }
-
-        /// <summary>
-        /// Handles initialization of non-subject items
-        /// </summary>
-        protected virtual void Initialize() { }
-
-        /// <summary>
         /// Defines the subject and how it is executed.
         /// </summary>
         /// <returns></returns>
         protected abstract Func<T> Given();
 
-        /// <summary>
-        /// Performs clean up for test
-        /// </summary>
-        protected virtual void Destroy() { }
-        
     }
 
     /// <summary>
     /// Base class for test cases that returns void
     /// </summary>
-    public abstract class TestCase : TestContainer, IDisposable
+    public abstract class TestCase : TestBase
     {
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TestCase"/> class.
-        /// </summary>
-        public TestCase()
-            : base()
-        {
-            
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Destroy();
-        }
 
         /// <summary>
         /// The subject context
@@ -96,22 +76,11 @@ namespace Speculous
         }
 
         /// <summary>
-        /// Handles initialization of non-subject items
-        /// </summary>
-        protected virtual void Initialize() { }
-
-        /// <summary>
         /// Defines the subject and how it is executed.
         /// </summary>
         /// <returns></returns>
         protected abstract Action Given();
 
-        /// <summary>
-        /// Performs clean up for test
-        /// </summary>
-        protected virtual void Destroy() { } 
-        
     }
-
 
 }
