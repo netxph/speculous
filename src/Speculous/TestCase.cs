@@ -14,19 +14,28 @@ namespace Speculous
     public abstract class TestCase<T, U> : TestBase
     {
 
+
         /// <summary>
         /// The subject context
         /// </summary>
-        protected Func<U, T> Subject
+        protected Func<T, U> Subject
         {
-            get {  return Given(); }
+            get { return Given(); }
+        }
+
+        /// <summary>
+        /// The executed subject context
+        /// </summary>
+        protected U Its
+        {
+            get { return Subject(default(T)); }
         }
 
         /// <summary>
         /// Defines the subject and how it is executed
         /// </summary>
         /// <returns></returns>
-        protected abstract Func<U, T> Given();
+        protected abstract Func<T, U> Given();
 
     }
 
